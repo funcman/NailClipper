@@ -21,10 +21,22 @@ SOURCES     +=          \
 FORMS       +=          \
     ncMainWindow.ui
 
-RESOURCES +=            \
+RESOURCES   +=          \
     resource.qrc
 
-CONFIG      +=          \
-    mobility
+win32 {
+    LIBS    +=          \
+        -lopengl32
+}
 
-MOBILITY =
+macx {
+}
+
+unix {
+}
+
+ios {
+}
+
+android {
+}
