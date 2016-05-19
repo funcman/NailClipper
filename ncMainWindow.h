@@ -14,6 +14,9 @@ public:
     explicit ncMainWindow(QWidget* parent=0);
     ~ncMainWindow();
 
+private slots:
+    void on_actionGitHub_triggered();
+
 private:
     Ui::ncMainWindow* ui;
 };
