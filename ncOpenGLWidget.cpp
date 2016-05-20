@@ -1,4 +1,5 @@
 #include "ncOpenGLWidget.h"
+#include <QFile>
 
 ncOpenGLWidget::ncOpenGLWidget(QWidget* parent)
 :   QOpenGLWidget(parent)
@@ -53,23 +54,49 @@ void ncOpenGLWidget::resizeGL(int w, int h) {
 void ncOpenGLWidget::paintGL() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    glFlush();
+}
+
+QString ncOpenGLWidget::readCodeFromFile(QString const& shaderFile) {
+    QString out;
+#if defined(Q_OS_IOS) || defined(Q_OS_ANDROID)
+    out.append("#version 300 es\n");
+#else
+    out.append("#version 330 core\n");
+#endif
+    QFile file(shaderFile);
+    if (!file.open(QFile::ReadOnly|QFile::Text)) {
+        qWarning() << "Could not open shader program file: " << shaderFile;
+        return QString::null;
+    }
+    QTextStream in(&file);
+    out.append(in.readAll());
+    return out;
 }
 
 bool ncOpenGLWidget::prepareShaderProgram(QString const& vertexShaderPath, QString const& fragmentShaderPath) {
-    bool result = program_->addShaderFromSourceFile(QOpenGLShader::Vertex, vertexShaderPath);
-    if (!result) {
+    QString vertexShaderCode = this->readCodeFromFile(vertexShaderPath);
+    if (vertexShaderCode.isNull()) {
+        return false;
+    }
+    if (!program_->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderCode)) {
         qWarning() << "Could not add vertex shader program:" << program_->log();
+        return false;
     }
 
-    result = program_->addShaderFromSourceFile(QOpenGLShader::Fragment, fragmentShaderPath);
-    if (!result) {
+    QString fragmentShaderCode = this->readCodeFromFile(fragmentShaderPath);
+    if (fragmentShaderCode.isNull()) {
+        return false;
+    }
+    if (!program_->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderCode)) {
         qWarning() << "Could not add fragment shader program:" << program_->log();
+        return false;
     }
 
-    result = program_->link();
-    if (!result) {
+    if (!program_->link()) {
         qWarning() << "Could not link shader program:" << program_->log();
+        return false;
     }
 
-    return result;
+    return true;
 }

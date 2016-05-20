@@ -23,7 +23,8 @@ private:
     QOpenGLBuffer               vbo_;
     QOpenGLShaderProgram*       program_;
 
-    bool prepareShaderProgram(QString const& vertexShaderPath, QString const& fragmentShaderPath);
+    QString readCodeFromFile(QString const& shaderFile);
+    bool    prepareShaderProgram(QString const& vertexShaderPath, QString const& fragmentShaderPath);
 };
 
 #endif//NCOPENGLWIDGET_H
