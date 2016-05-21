@@ -1,9 +1,11 @@
 #ifdef GL_ES
-out mediump vec4 fColor;
+in  mediump vec4 fragColor;
+out mediump vec4 color;
 #else
-out vec4 fColor;
+in  vec4 fragColor;
+out vec4 color;
 #endif
 
 void main( void ) {
-    fColor = vec4(1.0, 0.0, 0.0, 1.0);
+    color = fragColor;
 }

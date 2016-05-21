@@ -1,5 +1,7 @@
 #include "ncOpenGLWidget.h"
 #include <QFile>
+#include "ncMatrix.h"
+#include "ncQuad.h"
 
 ncOpenGLWidget::ncOpenGLWidget(QWidget* parent)
 :   QOpenGLWidget(parent)
@@ -24,27 +26,23 @@ void ncOpenGLWidget::initializeGL() {
         vao_.bind();
     }
 
-    float vertices[] = {
-        -0.5f,  0.5f, 1.0f,
-         0.5f,  0.5f, 1.0f,
-         0.5f, -0.5f, 1.0f,
-        -0.5f, -0.5f, 1.0f,
-    };
-
+    ncQuad quad(-0.5f, -0.5f, 1.f, 1.f, RGBA(255,0,0,255));
     vbo_.create();
     vbo_.bind();
     vbo_.setUsagePattern(QOpenGLBuffer::StaticDraw);
-    int vertices_num    = 4;
-    int vertex_size     = sizeof(float) * 3;
-    vbo_.allocate(vertices, vertex_size*vertices_num);
+    vbo_.allocate(&quad, sizeof(quad));
 
     program_ = new QOpenGLShaderProgram();
     if (!prepareShaderProgram(":/vertex.glsl", ":/fragment.glsl")) {
         return;
     }
     program_->bind();
-    program_->setAttributeBuffer("vertices", GL_FLOAT, 0, 3);
-    program_->enableAttributeArray("vertices");
+    program_->setUniformValue("projectionMatrix",   QMatrix4x4((float*)ncMatrix::identity()));
+    program_->setUniformValue("modelViewMatrix",    QMatrix4x4((float*)ncMatrix::identity()));
+    program_->setAttributeBuffer("position",    GL_FLOAT, 0,                3, sizeof(quad)/4);
+    program_->setAttributeBuffer("color",       GL_FLOAT, sizeof(float)*3,  3, sizeof(quad)/4);
+    program_->enableAttributeArray("position");
+    program_->enableAttributeArray("color");
 }
 
 void ncOpenGLWidget::resizeGL(int w, int h) {

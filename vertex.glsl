@@ -1,5 +1,12 @@
-in vec3 vertices;
+uniform mat4 projectionMatrix;
+uniform mat4 modelViewMatrix;
+
+in  vec3 position;
+in  vec4 color;
+
+out vec4 fragColor;
 
 void main( void ) {
-    gl_Position = vec4(vertices, 1.0);
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    fragColor   = color;
 }
