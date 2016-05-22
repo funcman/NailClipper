@@ -1,8 +1,6 @@
 #ifndef NCVERTEX_H
 #define NCVERTEX_H
 
-#define RGBA(r,g,b,a) ((DWORD(a)<<24) + (DWORD(b)<<16) + (DWORD(g)<<8) + DWORD(r))
-
 class ncVertex {
 public:
     float   x;

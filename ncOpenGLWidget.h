@@ -2,9 +2,8 @@
 #define NCOPENGLWIDGET_H
 
 #include <QOpenGLWidget>
-#include <QOpenGLVertexArrayObject>
-#include <QOpenGLBuffer>
-#include <QOpenGLShaderProgram>
+
+class ncGraphics;
 
 class ncOpenGLWidget : public QOpenGLWidget {
     Q_OBJECT
@@ -19,12 +18,7 @@ protected:
     virtual void paintGL();
 
 private:
-    QOpenGLVertexArrayObject    vao_;
-    QOpenGLBuffer               vbo_;
-    QOpenGLShaderProgram*       program_;
-
-    QString readCodeFromFile(QString const& shaderFile);
-    bool    prepareShaderProgram(QString const& vertexShaderPath, QString const& fragmentShaderPath);
+    ncGraphics* gfx_;
 };
 
 #endif//NCOPENGLWIDGET_H

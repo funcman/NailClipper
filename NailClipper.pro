@@ -15,7 +15,8 @@ HEADERS     +=          \
     ncMatrix.h          \
     ncVertex.h          \
     ncTriple.h          \
-    ncQuad.h
+    ncQuad.h            \
+    ncGraphics.h
 
 SOURCES     +=          \
     main.cpp            \
@@ -24,7 +25,8 @@ SOURCES     +=          \
     ncMatrix.cpp        \
     ncVertex.cpp        \
     ncTriple.cpp        \
-    ncQuad.cpp
+    ncQuad.cpp          \
+    ncGraphics.cpp
 
 FORMS       +=          \
     ncMainWindow.ui
