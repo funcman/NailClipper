@@ -1,6 +1,8 @@
 #ifndef NCMATRIX_H
 #define NCMATRIX_H
 
+#include "ncVector.h"
+
 class ncMatrix {
 public:
     union {
@@ -23,11 +25,17 @@ public:
         float f41, float f42, float f43, float f44
     );
 
-    operator float*();
-    operator float const*() const;
+    ncMatrix    operator*(ncMatrix const& mat) const;
+                operator float*();
+                operator float const*() const;
 
     static ncMatrix zero();
     static ncMatrix identity();
+
+    static ncMatrix translate(ncVector const& position);
+    static ncMatrix scale(ncVector const& scale);
+
+    static ncMatrix ortho(float left, float right, float top, float bottom, float near, float far);
 };
 
 #endif//NCMATRIX_H

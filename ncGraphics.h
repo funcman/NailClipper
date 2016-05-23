@@ -23,6 +23,7 @@ public:
     ncGraphics();
     ~ncGraphics();
 
+    void resize(int w, int h);
     void beginScene();
     void endScene();
     void clear(unsigned int color);
@@ -30,7 +31,7 @@ public:
     void renderQuad(ncQuad const* quad);
 
 private:
-    GLubyte*                    indexes_;
+    GLushort*                   indexes_;
     ncVertex*                   vertArray_;
     QOpenGLVertexArrayObject    vao_;
     QOpenGLBuffer               ibo_;

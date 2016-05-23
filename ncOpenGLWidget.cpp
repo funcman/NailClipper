@@ -17,12 +17,15 @@ void ncOpenGLWidget::initializeGL() {
 }
 
 void ncOpenGLWidget::resizeGL(int w, int h) {
-    glViewport(0, 0, w, qMax(h, 1));
+    gfx_->resize(w, h);
 }
 
 void ncOpenGLWidget::paintGL() {
     gfx_->beginScene();
     gfx_->clear(RGBA(128,128,128,255));
-    gfx_->renderQuad(new ncQuad(-0.5f, -0.5f, 1.f, 1.f, RGBA(255,0,0,255)));
+    for (int i=0; i<128; i+=2) {
+        gfx_->renderQuad(new ncQuad(i,      i,      this->width()-2*i,      this->height()-2*i,     RGBA(0,0,0,255)));
+        gfx_->renderQuad(new ncQuad(i+1,    i+1,    this->width()-2*(i+1),  this->height()-2*(i+1), RGBA(255,0,0,255)));
+    }
     gfx_->endScene();
 }

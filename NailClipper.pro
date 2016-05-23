@@ -12,6 +12,7 @@ TEMPLATE    =           \
 HEADERS     +=          \
     ncMainWindow.h      \
     ncOpenGLWidget.h    \
+    ncVector.h          \
     ncMatrix.h          \
     ncVertex.h          \
     ncTriple.h          \
@@ -22,6 +23,7 @@ SOURCES     +=          \
     main.cpp            \
     ncMainWindow.cpp    \
     ncOpenGLWidget.cpp  \
+    ncVector.cpp        \
     ncMatrix.cpp        \
     ncVertex.cpp        \
     ncTriple.cpp        \

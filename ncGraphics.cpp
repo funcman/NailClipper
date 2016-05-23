@@ -11,11 +11,11 @@
 ncGraphics::ncGraphics()
 :   ibo_(QOpenGLBuffer::IndexBuffer)
 ,   vbo_(QOpenGLBuffer::VertexBuffer) {
-    indexes_    = new GLubyte[VERTEX_BUFFER_SIZE*6/4];
+    indexes_    = new GLushort[VERTEX_BUFFER_SIZE*6/4];
     vertArray_  = new ncVertex[VERTEX_BUFFER_SIZE];
 
-    GLubyte* iptr   = indexes_;
-    GLubyte n       = 0;
+    GLushort* iptr  = indexes_;
+    GLushort n      = 0;
     for (int i=0; i<VERTEX_BUFFER_SIZE/4; ++i) {
         *iptr++ = n;
         *iptr++ = n+1;
@@ -31,7 +31,7 @@ ncGraphics::ncGraphics()
     ibo_.create();
     ibo_.bind();
     ibo_.setUsagePattern(QOpenGLBuffer::StaticDraw);
-    ibo_.allocate(indexes_, sizeof(GLubyte)*VERTEX_BUFFER_SIZE*6/4);
+    ibo_.allocate(indexes_, sizeof(GLushort)*VERTEX_BUFFER_SIZE*6/4);
     ibo_.release();
 
     vbo_.create();
@@ -44,10 +44,6 @@ ncGraphics::ncGraphics()
     if (!prepareShaderProgram(":/vertex.glsl", ":/fragment.glsl")) {
         return;
     }
-    program_->bind();
-    program_->setUniformValue("projectionMatrix",   QMatrix4x4((float*)ncMatrix::identity()));
-    program_->setUniformValue("modelViewMatrix",    QMatrix4x4((float*)ncMatrix::identity()));
-    program_->release();
 
     numPrim_        = 0;
     curPrimType_    = PRIM_QUADS;
@@ -60,6 +56,16 @@ ncGraphics::~ncGraphics() {
     vao_.destroy();
     delete[] vertArray_;
     delete[] indexes_;
+}
+
+void ncGraphics::resize(int w, int h) {
+    glViewport(0, 0, w, h>1?h:1);
+
+    ncMatrix mat = mat.ortho(0.f, w, -h, 0, -1.0, 1.0) * mat.scale(ncVector(1.f, -1.f, 1.f));
+    program_->bind();
+    program_->setUniformValue("projectionMatrix",   QMatrix4x4((float*)mat));
+    program_->setUniformValue("modelViewMatrix",    QMatrix4x4((float*)ncMatrix::identity()));
+    program_->release();
 }
 
 void ncGraphics::beginScene() {
@@ -75,6 +81,8 @@ void ncGraphics::endScene() {
     vbo_.release();
     ibo_.release();
     vao_.release();
+
+    glFlush();
 }
 
 void ncGraphics::clear(unsigned int color) {
@@ -124,12 +132,10 @@ void ncGraphics::renderBatch() {
             program_->setAttributeBuffer("color",       GL_FLOAT, sizeof(float)*3,  3, sizeof(ncVertex));
             program_->enableAttributeArray("position");
             program_->enableAttributeArray("color");
-            glDrawElements(GL_TRIANGLES, numPrim_*6, GL_UNSIGNED_BYTE, 0);
+            glDrawElements(GL_TRIANGLES, numPrim_*6, GL_UNSIGNED_SHORT, 0);
         } break;
         default: break;
         }
-
-        glFlush();
         numPrim_ = 0;
     }
 }
