@@ -2,6 +2,7 @@
 #include <QFile>
 #include "ncVertex.h"
 #include "ncMatrix.h"
+#include "ncTexture.h"
 
 #define VERTEX_BUFFER_SIZE  4000
 
@@ -47,6 +48,10 @@ ncGraphics::ncGraphics()
 
     numPrim_        = 0;
     curPrimType_    = PRIM_QUADS;
+    curTexture_     = 0;
+    program_->bind();
+    program_->setUniformValue("texIsInvalid", true);
+    program_->release();
 }
 
 ncGraphics::~ncGraphics() {
@@ -95,11 +100,27 @@ void ncGraphics::clear(unsigned int color) {
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 }
 
+void ncGraphics::setTexture(ncTexture* tex) {
+    glActiveTexture(GL_TEXTURE0);
+    if (tex) {
+        glBindTexture(GL_TEXTURE_2D, tex->handle());
+    }else {
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+    program_->setUniformValue("texIsInvalid",   tex==0 || tex->handle()==0);
+    program_->setUniformValue("texSampler",     0);
+}
+
 void ncGraphics::renderTriple(ncTriple const* triple) {
     if ((curPrimType_ != PRIM_TRIPLES)
-    ||  (numPrim_ >= VERTEX_BUFFER_SIZE/PRIM_TRIPLES)) {
+    ||  (numPrim_ >= VERTEX_BUFFER_SIZE/PRIM_TRIPLES)
+    ||  (curTexture_ != triple->tex)) {
         this->renderBatch();
         curPrimType_ = PRIM_TRIPLES;
+        if (curTexture_ != triple->tex) {
+            setTexture(triple->tex);
+            curTexture_ = triple->tex;
+        }
     }
     memcpy(&vertArray_[numPrim_*PRIM_TRIPLES], triple->v, sizeof(ncVertex)*PRIM_TRIPLES);
     ++numPrim_;
@@ -107,9 +128,14 @@ void ncGraphics::renderTriple(ncTriple const* triple) {
 
 void ncGraphics::renderQuad(ncQuad const* quad) {
     if ((curPrimType_ != PRIM_QUADS)
-    ||  (numPrim_ >= VERTEX_BUFFER_SIZE/PRIM_QUADS)) {
+    ||  (numPrim_ >= VERTEX_BUFFER_SIZE/PRIM_QUADS)
+    ||  (curTexture_ != quad->tex)) {
         this->renderBatch();
         curPrimType_ = PRIM_QUADS;
+        if (curTexture_ != quad->tex) {
+            setTexture(quad->tex);
+            curTexture_ = quad->tex;
+        }
     }
     memcpy(&vertArray_[numPrim_*PRIM_QUADS], quad->v, sizeof(ncVertex)*PRIM_QUADS);
     ++numPrim_;
@@ -121,17 +147,21 @@ void ncGraphics::renderBatch() {
         case PRIM_TRIPLES: {
             vbo_.write(0, vertArray_, sizeof(ncVertex)*PRIM_TRIPLES*numPrim_);
             program_->setAttributeBuffer("position",    GL_FLOAT, 0,                3, sizeof(ncVertex));
-            program_->setAttributeBuffer("color",       GL_FLOAT, sizeof(float)*3,  3, sizeof(ncVertex));
+            program_->setAttributeBuffer("color",       GL_FLOAT, sizeof(float)*3,  4, sizeof(ncVertex));
+            program_->setAttributeBuffer("texCoord",    GL_FLOAT, sizeof(float)*7,  2, sizeof(ncVertex));
             program_->enableAttributeArray("position");
             program_->enableAttributeArray("color");
+            program_->enableAttributeArray("texCoord");
             glDrawArrays(GL_TRIANGLES, 0, PRIM_TRIPLES*numPrim_);
         } break;
         case PRIM_QUADS: {
             vbo_.write(0, vertArray_, sizeof(ncVertex)*PRIM_QUADS*numPrim_);
             program_->setAttributeBuffer("position",    GL_FLOAT, 0,                3, sizeof(ncVertex));
-            program_->setAttributeBuffer("color",       GL_FLOAT, sizeof(float)*3,  3, sizeof(ncVertex));
+            program_->setAttributeBuffer("color",       GL_FLOAT, sizeof(float)*3,  4, sizeof(ncVertex));
+            program_->setAttributeBuffer("texCoord",    GL_FLOAT, sizeof(float)*7,  2, sizeof(ncVertex));
             program_->enableAttributeArray("position");
             program_->enableAttributeArray("color");
+            program_->enableAttributeArray("texCoord");
             glDrawElements(GL_TRIANGLES, numPrim_*6, GL_UNSIGNED_SHORT, 0);
         } break;
         default: break;

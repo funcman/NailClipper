@@ -17,7 +17,8 @@ HEADERS     +=          \
     ncVertex.h          \
     ncTriple.h          \
     ncQuad.h            \
-    ncGraphics.h
+    ncGraphics.h        \
+    ncTexture.h
 
 SOURCES     +=          \
     main.cpp            \
@@ -28,13 +29,15 @@ SOURCES     +=          \
     ncVertex.cpp        \
     ncTriple.cpp        \
     ncQuad.cpp          \
-    ncGraphics.cpp
+    ncGraphics.cpp      \
+    ncTexture.cpp
 
 FORMS       +=          \
     ncMainWindow.ui
 
 RESOURCES   +=          \
-    shaders.qrc
+    shaders.qrc         \
+    images.qrc
 
 win32 {
     LIBS    +=          \

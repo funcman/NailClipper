@@ -3,8 +3,6 @@
 #include <QSurfaceFormat>
 
 int main(int argc, char** argv) {
-    QApplication a(argc, argv);
-
     QSurfaceFormat format;
 #if defined(Q_OS_IOS) || defined(Q_OS_ANDROID)
     format.setRenderableType(QSurfaceFormat::OpenGLES);
@@ -17,6 +15,8 @@ int main(int argc, char** argv) {
     format.setDepthBufferSize(16);
     format.setStencilBufferSize(8);
     QSurfaceFormat::setDefaultFormat(format);
+
+    QApplication a(argc, argv);
 
     ncMainWindow w;
     w.show();

@@ -4,6 +4,7 @@
 #include <QOpenGLWidget>
 
 class ncGraphics;
+class ncTexture;
 
 class ncOpenGLWidget : public QOpenGLWidget {
     Q_OBJECT
@@ -19,6 +20,7 @@ protected:
 
 private:
     ncGraphics* gfx_;
+    ncTexture*  tex_;
 };
 
 #endif//NCOPENGLWIDGET_H

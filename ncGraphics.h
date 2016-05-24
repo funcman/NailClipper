@@ -18,6 +18,8 @@
 #define SETB(col,b)     (((col) & 0xFF00FFFF) + ((unsigned int)(b)<<16))
 #define SETA(col,a)     (((col) & 0x00FFFFFF) + ((unsigned int)(a)<<24))
 
+class ncTexture;
+
 class ncGraphics {
 public:
     ncGraphics();
@@ -40,7 +42,9 @@ private:
 
     int                         numPrim_;
     int                         curPrimType_;
+    ncTexture*                  curTexture_;
 
+    void    setTexture(ncTexture* tex);
     void    renderBatch();
     QString readCodeFromFile(QString const& shaderFile);
     bool    prepareShaderProgram(QString const& vertexShaderPath, QString const& fragmentShaderPath);
