@@ -15,12 +15,15 @@ public:
 
 protected:
     virtual void initializeGL();
-    virtual void resizeGL(int w, int h);
+    virtual void resizeGL(int, int);
     virtual void paintGL();
 
 private:
     ncGraphics* gfx_;
     ncTexture*  tex_;
+
+    int pixelWidth();
+    int pixelHeight();
 };
 
 #endif//NCOPENGLWIDGET_H

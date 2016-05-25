@@ -1,4 +1,6 @@
 #include "ncOpenGLWidget.h"
+#include <QGuiApplication>
+#include <QScreen>
 #include "ncGraphics.h"
 #include "ncTexture.h"
 
@@ -20,8 +22,8 @@ void ncOpenGLWidget::initializeGL() {
     tex_ = new ncTexture(":/demo.jpg");
 }
 
-void ncOpenGLWidget::resizeGL(int w, int h) {
-    gfx_->resize(w, h);
+void ncOpenGLWidget::resizeGL(int, int) {
+    gfx_->resize(this->pixelWidth(), this->pixelHeight());
 }
 
 void ncOpenGLWidget::paintGL() {
@@ -29,12 +31,13 @@ void ncOpenGLWidget::paintGL() {
     gfx_->clear(RGBA(128,128,128,255));
     int i;
     for (i=0; i<128; i+=2) {
-        gfx_->renderQuad(new ncQuad(i,      i,      this->width()-2*i,      this->height()-2*i,     RGBA(0,0,0,255)));
-        gfx_->renderQuad(new ncQuad(i+1,    i+1,    this->width()-2*(i+1),  this->height()-2*(i+1), RGBA(255,0,0,255)));
+        gfx_->renderQuad(new ncQuad(i,      i,      this->pixelWidth()-2*i,     this->pixelHeight()-2*i,     RGBA(0,0,0,255)));
+        gfx_->renderQuad(new ncQuad(i+1,    i+1,    this->pixelWidth()-2*(i+1), this->pixelHeight()-2*(i+1), RGBA(255,0,0,255)));
     }
-    gfx_->renderQuad(new ncQuad(
-            this->width()/2-128.f,
-            this->height()/2-128.f,
+    gfx_->renderQuad(
+        new ncQuad(
+            this->pixelWidth()  /2 - 128.f,
+            this->pixelHeight() /2 - 128.f,
             256.f,
             256.f,
             RGBA(255,255,255,255),
@@ -42,4 +45,12 @@ void ncOpenGLWidget::paintGL() {
         )
     );
     gfx_->endScene();
+}
+
+int ncOpenGLWidget::pixelWidth() {
+    return this->width() * QGuiApplication::primaryScreen()->devicePixelRatio();
+}
+
+int ncOpenGLWidget::pixelHeight() {
+    return this->height() * QGuiApplication::primaryScreen()->devicePixelRatio();
 }

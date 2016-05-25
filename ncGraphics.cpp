@@ -101,7 +101,6 @@ void ncGraphics::clear(unsigned int color) {
 }
 
 void ncGraphics::setTexture(ncTexture* tex) {
-    glActiveTexture(GL_TEXTURE0);
     if (tex) {
         glBindTexture(GL_TEXTURE_2D, tex->handle());
     }else {
