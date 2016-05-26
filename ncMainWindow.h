@@ -14,6 +14,9 @@ public:
     explicit ncMainWindow(QWidget* parent=0);
     ~ncMainWindow();
 
+protected:
+    virtual void showEvent(QShowEvent*);
+
 private slots:
     void on_actionGitHub_triggered();
 
