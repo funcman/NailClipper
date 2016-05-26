@@ -1,5 +1,6 @@
 #include "ncGraphics.h"
 #include <QFile>
+#include "ncCommon.h"
 #include "ncVertex.h"
 #include "ncMatrix.h"
 #include "ncTexture.h"
@@ -48,10 +49,14 @@ ncGraphics::ncGraphics()
 
     numPrim_        = 0;
     curPrimType_    = PRIM_QUADS;
+    curBlendMode_   = NC_BLEND_DEFAULT;
     curTexture_     = 0;
     program_->bind();
     program_->setUniformValue("texIsInvalid", true);
     program_->release();
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 ncGraphics::~ncGraphics() {
@@ -66,9 +71,8 @@ ncGraphics::~ncGraphics() {
 void ncGraphics::resize(int w, int h) {
     glViewport(0, 0, w, h>1?h:1);
 
-    ncMatrix mat = mat.ortho(0.f, w, -h, 0, -1.0, 1.0) * mat.scale(ncVector(1.f, -1.f, 1.f));
     program_->bind();
-    program_->setUniformValue("projectionMatrix",   QMatrix4x4((float*)mat));
+    program_->setUniformValue("projectionMatrix",   QMatrix4x4((float*)ncMatrix::ortho(0.f, w, 0.f, h, -128.f, 128.f)));
     program_->setUniformValue("modelViewMatrix",    QMatrix4x4((float*)ncMatrix::identity()));
     program_->release();
 }
@@ -100,41 +104,71 @@ void ncGraphics::clear(unsigned int color) {
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 }
 
+void ncGraphics::setBlendMode(int mode) {
+    if (curBlendMode_ == mode) {
+        return;
+    }
+
+    if ((mode&NC_BLEND_COLORADD)    != (curBlendMode_&NC_BLEND_COLORADD)) {
+        program_->setUniformValue("useColorAdd",    (bool)(mode&NC_BLEND_COLORADD));
+    }
+    if ((mode&NC_BLEND_ALPHABLEND)  != (curBlendMode_&NC_BLEND_ALPHABLEND)) {
+        if (mode&NC_BLEND_ALPHABLEND) {
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        }else {
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+        }
+    }
+    if ((mode&NC_BLEND_ZWRITE)      != (curBlendMode_&NC_BLEND_ZWRITE)) {
+        if (mode&NC_BLEND_ZWRITE) {
+            glEnable(GL_DEPTH_TEST);
+        }else {
+            glDisable(GL_DEPTH_TEST);
+        }
+    }
+
+    curBlendMode_ = mode;
+}
+
 void ncGraphics::setTexture(ncTexture* tex) {
+    if (curTexture_ == tex) {
+        return;
+    }
+
     if (tex) {
         glBindTexture(GL_TEXTURE_2D, tex->handle());
     }else {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
-    program_->setUniformValue("texIsInvalid",   tex==0 || tex->handle()==0);
-    program_->setUniformValue("texSampler",     0);
+    program_->setUniformValue("texInvalid", tex==0 || tex->handle()==0);
+    program_->setUniformValue("texSampler", 0);
+
+    curTexture_ = tex;
 }
 
 void ncGraphics::renderTriple(ncTriple const* triple) {
-    if ((curPrimType_ != PRIM_TRIPLES)
-    ||  (numPrim_ >= VERTEX_BUFFER_SIZE/PRIM_TRIPLES)
-    ||  (curTexture_ != triple->tex)) {
+    if ((curPrimType_   != PRIM_TRIPLES)
+    ||  (curBlendMode_  != triple->blendMode)
+    ||  (numPrim_       >= VERTEX_BUFFER_SIZE/PRIM_TRIPLES)
+    ||  (curTexture_    != triple->tex)) {
         this->renderBatch();
         curPrimType_ = PRIM_TRIPLES;
-        if (curTexture_ != triple->tex) {
-            setTexture(triple->tex);
-            curTexture_ = triple->tex;
-        }
+        setBlendMode(triple->blendMode);
+        setTexture(triple->tex);
     }
     memcpy(&vertArray_[numPrim_*PRIM_TRIPLES], triple->v, sizeof(ncVertex)*PRIM_TRIPLES);
     ++numPrim_;
 }
 
 void ncGraphics::renderQuad(ncQuad const* quad) {
-    if ((curPrimType_ != PRIM_QUADS)
-    ||  (numPrim_ >= VERTEX_BUFFER_SIZE/PRIM_QUADS)
-    ||  (curTexture_ != quad->tex)) {
+    if ((curPrimType_   != PRIM_QUADS)
+    ||  (curBlendMode_  != quad->blendMode)
+    ||  (numPrim_       >= VERTEX_BUFFER_SIZE/PRIM_QUADS)
+    ||  (curTexture_    != quad->tex)) {
         this->renderBatch();
         curPrimType_ = PRIM_QUADS;
-        if (curTexture_ != quad->tex) {
-            setTexture(quad->tex);
-            curTexture_ = quad->tex;
-        }
+        setBlendMode(quad->blendMode);
+        setTexture(quad->tex);
     }
     memcpy(&vertArray_[numPrim_*PRIM_QUADS], quad->v, sizeof(ncVertex)*PRIM_QUADS);
     ++numPrim_;

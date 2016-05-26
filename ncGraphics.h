@@ -42,8 +42,10 @@ private:
 
     int                         numPrim_;
     int                         curPrimType_;
+    int                         curBlendMode_;
     ncTexture*                  curTexture_;
 
+    void    setBlendMode(int mode);
     void    setTexture(ncTexture* tex);
     void    renderBatch();
     QString readCodeFromFile(QString const& shaderFile);

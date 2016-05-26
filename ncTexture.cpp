@@ -23,7 +23,7 @@ ncTexture::ncTexture(char const* filename) {
         unsigned int* data      = new unsigned int[this->width*this->height];
         memset(data, 128, this->width*this->height*sizeof(unsigned int));
         for (int l=0; l<img.height(); ++l) {
-            memcpy(data+this->original_width*(this->original_height-l-1), img.constScanLine(l), img.width()*sizeof(unsigned int));
+            memcpy(data+this->original_width*l, img.constScanLine(l), img.width()*sizeof(unsigned int));
         }
         glGenTextures(1, this->textures);
         glBindTexture(GL_TEXTURE_2D, *(this->textures));

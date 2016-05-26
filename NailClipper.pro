@@ -12,6 +12,7 @@ TEMPLATE    =           \
 HEADERS     +=          \
     ncMainWindow.h      \
     ncOpenGLWidget.h    \
+    ncCommon.h          \
     ncVector.h          \
     ncMatrix.h          \
     ncVertex.h          \
